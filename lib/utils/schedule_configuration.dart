@@ -16,6 +16,7 @@ class ScheduleConfiguration {
         prayerName: entry.key,
         prayerTime: entry.value,
       );
+      print('Scheduled ${entry.key} at ${entry.value}');
     }
   }
 

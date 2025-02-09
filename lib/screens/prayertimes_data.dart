@@ -15,14 +15,12 @@ class PrayerTimesRestart extends StatefulWidget {
   final Madhab madhab;
   final CalculationMethod method;
   final Function(String) locationName;
-  final Function() refresh;
   const PrayerTimesRestart({
     super.key,
     required this.location,
     required this.madhab,
     required this.method,
     required this.locationName,
-    required this.refresh,
   });
 
   @override
@@ -33,6 +31,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
   final String _timezone = DateTime.now().timeZoneName;
   late Future<Position> _locationFuture;
   Timer? _timer;
+  Coordinates _myCoordinates = Coordinates(0, 0);
 
   @override
   void initState() {
@@ -40,6 +39,11 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
     _locationFuture = widget.location;
     widget.location.then((position) {
       _getAddressFromCoordinates(position.latitude, position.longitude);
+      _myCoordinates = Coordinates(position.latitude, position.longitude);
+      final paramsCalc = widget.method.getParameters();
+      paramsCalc.madhab = widget.madhab;
+      final prayerTimes = PrayerTimes.today(_myCoordinates, paramsCalc);
+      ScheduleConfiguration.schedulePrayerNotification(prayerTimes);
     });
     _startTimer();
   }
@@ -106,7 +110,6 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
         final prayerTimes = PrayerTimes.today(myCoordinates, paramsCalc);
         final nextPrayerTime =
             ScheduleConfiguration.getNextPrayerTime(prayerTimes);
-        ScheduleConfiguration.schedulePrayerNotification(prayerTimes);
         HomeWidgetConfiguration.updateWidget(prayerTimes);
         return Column(
           children: [

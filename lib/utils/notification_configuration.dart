@@ -57,4 +57,24 @@ class LocalNotifications {
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
+
+  static void showNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await LocalNotifications._flutterLocalNotificationsPlugin.show(
+      0,
+      'Test Notification',
+      'This is a test notification',
+      platformChannelSpecifics,
+      payload: 'item x',
+    );
+  }
 }
