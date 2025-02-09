@@ -71,7 +71,7 @@ I only do these thing if user really request me to do this. For now i'll just pu
    - To download, click on the "Code" button, then select "Download ZIP".
    - To clone, use the following Git command: 
    ```
-   git clone https://github.com/insanansharyrasul/.git
+   git clone https://github.com/insanansharyrasul/syamsun.git
    ```
 
 1. **Run the Flutter App on android**
