@@ -7,7 +7,6 @@ import 'package:syamsun/constants/theme_set.dart';
 import 'package:syamsun/utils/location_configuration.dart';
 import 'package:syamsun/screens/prayertimes_data.dart';
 import 'package:syamsun/utils/homewidget_configuration.dart';
-import 'package:syamsun/utils/notification_configuration.dart';
 import 'package:syamsun/utils/saving_configuration.dart';
 
 class Homepage extends StatefulWidget {
@@ -76,7 +75,6 @@ class _HomepageState extends State<Homepage> {
           ],
         ),
         actions: [
-          IconButton(icon: Icon(Icons.food_bank), onPressed: LocalNotifications.showNotification),
           IconButton(
             onPressed: () {
               showDialog(
