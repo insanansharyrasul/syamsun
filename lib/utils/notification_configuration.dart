@@ -14,16 +14,9 @@ class LocalNotifications {
         .requestNotificationsPermission();
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings();
-    final LinuxInitializationSettings initializationSettingsLinux =
-        LinuxInitializationSettings(defaultActionName: 'Open notification');
     final InitializationSettings initializationSettings =
         InitializationSettings(
       android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-      macOS: initializationSettingsDarwin,
-      linux: initializationSettingsLinux,
     );
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
@@ -37,21 +30,26 @@ class LocalNotifications {
     final vibrationPattern = Int64List.fromList([0, 1000, 500, 2000]);
     tz.initializeTimeZones();
     final AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails('prayer_channel_id', 'Prayer Notifications',
-            channelDescription: 'Notifications for prayer times',
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: false,
-            enableVibration: true,
-            vibrationPattern: vibrationPattern,
-            );
+        AndroidNotificationDetails(
+      'prayer_channel_id',
+      'Prayer Notifications',
+      channelDescription: 'Notifications for prayer times',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+      enableVibration: true,
+      vibrationPattern: vibrationPattern,
+    );
     final NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       prayerName.hashCode,
       'Prayer Time',
       'It\'s time for $prayerName prayer',
-      tz.TZDateTime.from(prayerTime, tz.local),
+      tz.TZDateTime.from(
+        prayerTime,
+        tz.local,
+      ),
       notificationDetails,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
