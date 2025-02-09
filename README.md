@@ -39,10 +39,8 @@ These problems may be fixed in the future, because i still learning Flutter at t
 1. The dropdown menu item for calculation method and madhab doesn't looks good (has an underscore, lowercase, etc)
 2. The app haven't been tested on several mobile phone
 3. Size and performance issue?
-4. Notification is delayed
-5. Notification icon doesn't match the app icon
-6. You can't set the other timezone other than your smartphone has
-7. There is no way to change the location (Automatically picked based on your location)
+4. You can't set the other timezone other than your smartphone has
+5. There is no way to change the location (Automatically picked based on your location)
 
 ## To-Do-List
 
