@@ -7,8 +7,8 @@ class MainThemeSet {
   static TextStyle secondaryFont =
       GoogleFonts.roboto(fontSize: 16, color: Colors.white);
   static BorderRadiusGeometry mainBorderRadius = BorderRadius.circular(8);
-  static EdgeInsetsGeometry verticalPadding = EdgeInsets.symmetric(vertical: 8);
-  static Color focusColor = Color.fromARGB(255, 0, 106, 103);
+  static EdgeInsetsGeometry verticalPadding = const EdgeInsets.symmetric(vertical: 8);
+  static Color focusColor = const Color.fromARGB(255, 0, 106, 103);
 }
 
 class DialogThemeSet {

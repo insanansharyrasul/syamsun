@@ -26,7 +26,7 @@ class ScheduleConfiguration {
     if (now.isBefore(prayerTimes.asr)) return prayerTimes.asr;
     if (now.isBefore(prayerTimes.maghrib)) return prayerTimes.maghrib;
     if (now.isBefore(prayerTimes.isha)) return prayerTimes.isha;
-    return prayerTimes.fajr.add(Duration(days: 1));
+    return prayerTimes.fajr.add(const Duration(days: 1));
   }
 
   static String setNextName(PrayerTimes prayerTimes) {

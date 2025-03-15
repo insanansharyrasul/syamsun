@@ -146,7 +146,7 @@ class _HomepageState extends State<Homepage> {
                 ),
               );
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.settings,
               color: Colors.white,
             ),

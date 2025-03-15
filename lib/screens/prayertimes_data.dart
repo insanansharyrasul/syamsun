@@ -55,7 +55,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {});
       }
@@ -93,7 +93,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
       future: _locationFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
               child: CircularProgressIndicator(
             color: Colors.white,
           ));
@@ -113,7 +113,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
         HomeWidgetConfiguration.updateWidget(prayerTimes);
         return Column(
           children: [
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Column(
               children: [
                 Text(
@@ -135,24 +135,24 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
                 ),
               ],
             ),
-            SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
               child: Divider(
                 color: Colors.white,
                 thickness: 1,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
                 color: nextPrayerTime == prayerTimes.fajr ||
                         nextPrayerTime ==
-                            prayerTimes.fajr.add(Duration(days: 1))
+                            prayerTimes.fajr.add(const Duration(days: 1))
                     ? MainThemeSet.focusColor
                     : MainThemeSet.primaryColor,
               ),
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -173,7 +173,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
                     ? MainThemeSet.focusColor
                     : MainThemeSet.primaryColor,
               ),
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -194,7 +194,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
                     ? MainThemeSet.focusColor
                     : MainThemeSet.primaryColor,
               ),
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -215,7 +215,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
                     ? MainThemeSet.focusColor
                     : MainThemeSet.primaryColor,
               ),
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -236,7 +236,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
                     ? MainThemeSet.focusColor
                     : MainThemeSet.primaryColor,
               ),
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
