@@ -1,16 +1,54 @@
+import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syamsun/constants/theme_set.dart';
+import 'package:syamsun/utils/homewidget_configuration.dart';
+import 'package:syamsun/utils/location_configuration.dart';
 import 'package:syamsun/utils/notification_configuration.dart';
 import 'package:syamsun/screens/homepage.dart';
 import 'package:syamsun/utils/saving_configuration.dart';
+import 'package:workmanager/workmanager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalNotifications.init();
   await SavingPreferences.init();
+  Workmanager().initialize(callbackDispatcher);
   runApp(const MyApp());
+}
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    debugPrint("Background task triggered at: ${DateTime.now()}");
+    final prayerTimes = await fetchPrayerTimes();
+    HomeWidgetConfiguration.updateWidget(prayerTimes);
+    debugPrint("Home widget updated.");
+    return Future.value(true);
+  });
+}
+
+Future<PrayerTimes> fetchPrayerTimes() async {
+  try {
+    final Position position = await LocationConfiguration.getCurrentLocation();
+    final coordinates = Coordinates(
+        position.latitude, position.longitude); 
+    final String? savedMethod =
+        await SavingPreferences.getConfigurationMadhab();
+    final CalculationMethod calculationMethod = savedMethod != null
+        ? CalculationMethod.values.firstWhere(
+            (method) => method.toString() == savedMethod,
+            orElse: () => CalculationMethod.muslim_world_league,
+          )
+        : CalculationMethod.muslim_world_league;
+    final params = calculationMethod.getParameters();
+    final prayerTimes = PrayerTimes.today(coordinates, params);
+    return prayerTimes;
+  } catch (e) {
+    debugPrint('Error fetching prayer times: $e');
+    rethrow;
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -26,6 +64,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    Workmanager().registerPeriodicTask(
+      "1",
+      "updatePrayerTimes",
+      frequency: const Duration(hours: 12),
+    );
     _checkPermissions();
   }
 

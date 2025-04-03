@@ -11,6 +11,7 @@
 - [Problems](#problems)
 - [To-Do-List](#to-do-list)
 - [Dependencies](#dependencies)
+- [My Environment Detail](#my-environment-detail)
 - [Setup](#setup)
 
 ## Screenshots
@@ -62,17 +63,34 @@ I only do these thing if user really request me to do this. For now i'll just pu
 - shared_preferences
 - timezone
 
+## My Environment Detail
+
+- Flutter SDK (3.27.1)
+- Gradle: 8.3
+- Kotlin : 1.9.0
+- Groovy : 3.0.17
+- Ant : Apache Ant(TM) version 1.10.13 compiled on January 4 2023
+- JVM : 23.0.2 (Ubuntu 23.0.2+7-Ubuntu-1ubuntu122.04)
+- OS : Linux 6.8.0-52-generic amd64
+
 
 ## Setup
 
-1. **Download or Clone Project**
+1. **Prequisite**
+    - Install Java JDK 11 or higher
+    - Set JAVA_HOME environment variable
+    - Install Android Studio or Android SDK
+    - Set ANDROID_HOME environment variable
+    - 
+
+2. **Download or Clone Project**
    - To download, click on the "Code" button, then select "Download ZIP".
    - To clone, use the following Git command: 
    ```
    git clone https://github.com/insanansharyrasul/syamsun.git
    ```
 
-1. **Run the Flutter App on android**
+3. **Run the Flutter App on android**
     1. Run 
     ```
     flutter build apk

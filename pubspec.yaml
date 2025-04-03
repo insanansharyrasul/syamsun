@@ -19,6 +19,11 @@ dependencies:
   permission_handler: ^11.3.1
   shared_preferences: ^2.5.1
   timezone: ^0.10.0
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      path: workmanager
+      ref: main
 
 dev_dependencies:
   flutter_test:

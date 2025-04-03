@@ -36,7 +36,7 @@ class LocalNotifications {
       channelDescription: 'Notifications for prayer times',
       importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
+      showWhen: true,
       enableVibration: true,
       vibrationPattern: vibrationPattern,
     );
@@ -65,7 +65,7 @@ class LocalNotifications {
       'your_channel_name',
       importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
+      showWhen: true,
     );
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
