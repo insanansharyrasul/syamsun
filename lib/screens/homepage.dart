@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:home_widget/home_widget.dart';
@@ -7,6 +10,7 @@ import 'package:syamsun/constants/theme_set.dart';
 import 'package:syamsun/utils/location_configuration.dart';
 import 'package:syamsun/screens/prayertimes_data.dart';
 import 'package:syamsun/utils/homewidget_configuration.dart';
+import 'package:syamsun/utils/notification_configuration.dart';
 import 'package:syamsun/utils/saving_configuration.dart';
 
 class Homepage extends StatefulWidget {
@@ -28,6 +32,7 @@ class _HomepageState extends State<Homepage> {
   late CalculationMethod _selectedMethod;
   late Madhab _selectedMadhab;
   String _locationName = '';
+  DateTime _duration = DateTime(2024, 1, 1, 0, 0, 0);
 
   @override
   void initState() {
@@ -109,8 +114,7 @@ class _HomepageState extends State<Homepage> {
                               setState(() {
                                 _selectedMethod = newValue!;
                                 _refresh();
-                                SavingPreferences.saveConfigurationMethod(
-                                    newValue.toString());
+                                SavingPreferences.saveConfigurationMethod(newValue.toString());
                               });
                             },
                           ),
@@ -134,8 +138,7 @@ class _HomepageState extends State<Homepage> {
                               setState(() {
                                 _selectedMadhab = newValue!;
                                 _refresh();
-                                SavingPreferences.saveConfigurationMadhab(
-                                    newValue.toString());
+                                SavingPreferences.saveConfigurationMadhab(newValue.toString());
                               });
                             },
                           ),
@@ -150,7 +153,108 @@ class _HomepageState extends State<Homepage> {
               Icons.settings,
               color: Colors.white,
             ),
-          )
+          ),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => StatefulBuilder(
+                  builder: (context, setState) => SimpleDialog(
+                    title: Text(
+                      'Set Sleep Notifier',
+                      style: DialogThemeSet.titleFont,
+                      textAlign: TextAlign.center,
+                    ),
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TimePickerSpinner(
+                            time: DateTime(2024, 1, 1, 7, 0, 0),
+                            is24HourMode: true,
+                            normalTextStyle: DialogThemeSet.dropDownFont,
+                            highlightedTextStyle: DialogThemeSet.dropDownFont.copyWith(
+                              color: MainThemeSet.focusColor,
+                            ),
+                            alignment: Alignment.center,
+                            itemHeight: 40,
+                            onTimeChange: (time) {
+                              _duration = time;
+                            },
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                // Get current location and calculate prayer times
+                                final position = await LocationConfiguration.getCurrentLocation();
+                                final coordinates =
+                                    Coordinates(position.latitude, position.longitude);
+                                final params = _selectedMethod.getParameters();
+                                params.madhab = _selectedMadhab;
+
+                                // Get next Fajr time
+                                final now = DateTime.now();
+                                final prayerTimes = PrayerTimes.today(coordinates, params);
+                                final nextFajr = prayerTimes.fajr.isAfter(now)
+                                    ? prayerTimes.fajr
+                                    : PrayerTimes(
+                                            coordinates, DateComponents.from(now.add(const Duration(days: 1))), params)
+                                        .fajr;
+
+                                final selectedDuration = Duration(
+                                  hours: _duration.hour,
+                                  minutes: _duration.minute,
+                                );
+                                final alarmTime = nextFajr.subtract(selectedDuration);
+                                debugPrint('Alarm time: $alarmTime');
+                                await LocalNotifications.scheduledSleeepNotification(
+                                  id: 'Sleep',
+                                  setTime: alarmTime,
+                                );
+
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Alarm set for ${alarmTime.hour}:${alarmTime.minute}',
+                                      style: DialogThemeSet.dropDownFont,
+                                    ),
+                                    backgroundColor: MainThemeSet.focusColor,
+                                  ),
+                                );
+                              } catch (e) {
+                                debugPrint('Error setting alarm: $e');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error setting alarm',
+                                      style: DialogThemeSet.dropDownFont,
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: MainThemeSet.focusColor,
+                            ),
+                            child: Text(
+                              'Set Notifier',
+                              style: DialogThemeSet.dropDownFont,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.alarm,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
       body: PrayerTimesRestart(
