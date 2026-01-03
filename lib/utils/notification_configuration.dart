@@ -53,7 +53,7 @@ class LocalNotifications {
     );
   }
 
-  static Future<void> scheduledSleeepNotification(
+  static Future<void> scheduledSleepNotification(
       {required String id, required DateTime setTime}) async {
     final vibrationPattern = Int64List.fromList([0, 500, 500, 1000]);
     tz.initializeTimeZones();

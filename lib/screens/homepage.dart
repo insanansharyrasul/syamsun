@@ -16,20 +16,64 @@ class Homepage extends StatefulWidget {
   State<Homepage> createState() => _HomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
   DateTime _duration = DateTime(2024, 1, 1, 0, 0, 0);
+  DateTime? _lastLoadedDate;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     HomeWidget.groupId = HomeWidgetConfiguration.appGroupId;
 
     // Load prayer times when homepage is shown
+    _loadPrayerTimes();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      // Check if the day has changed since we last loaded prayer times
+      final now = DateTime.now();
+      if (_lastLoadedDate == null ||
+          _lastLoadedDate!.day != now.day ||
+          _lastLoadedDate!.month != now.month ||
+          _lastLoadedDate!.year != now.year) {
+        debugPrint('App resumed - day changed, refreshing prayer times');
+        _loadPrayerTimes(forceLocationRefresh: true);
+      } else {
+        debugPrint('App resumed - same day, no refresh needed');
+      }
+    }
+  }
+
+  void _loadPrayerTimes({bool forceLocationRefresh = false}) {
     final settingsState = context.read<SettingsBloc>().state;
-    context.read<PrayerTimesBloc>().add(LoadPrayerTimes(
-          method: settingsState.calculationMethod,
-          madhab: settingsState.madhab,
-        ));
+    final prayerTimesState = context.read<PrayerTimesBloc>().state;
+
+    // If we already have prayer times loaded, use refresh (uses cache)
+    if (prayerTimesState.status == PrayerTimesStatus.loaded) {
+      context.read<PrayerTimesBloc>().add(RefreshPrayerTimes(
+            method: settingsState.calculationMethod,
+            madhab: settingsState.madhab,
+            forceLocationRefresh: forceLocationRefresh,
+          ));
+    } else {
+      context.read<PrayerTimesBloc>().add(LoadPrayerTimes(
+            method: settingsState.calculationMethod,
+            madhab: settingsState.madhab,
+          ));
+    }
+
+    _lastLoadedDate = DateTime.now();
   }
 
   void _showSettingsDialog(BuildContext context) {

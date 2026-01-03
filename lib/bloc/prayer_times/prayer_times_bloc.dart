@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:adhan/adhan.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -14,27 +12,10 @@ part 'prayer_times_event.dart';
 part 'prayer_times_state.dart';
 
 class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
-  Timer? _timer;
-
   PrayerTimesBloc() : super(PrayerTimesState.initial()) {
     on<LoadPrayerTimes>(_onLoadPrayerTimes);
     on<RefreshPrayerTimes>(_onRefreshPrayerTimes);
-    on<UpdateTick>(_onUpdateTick);
     on<ScheduleSleepNotification>(_onScheduleSleepNotification);
-
-    _startTimer();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      add(UpdateTick());
-    });
-  }
-
-  @override
-  Future<void> close() {
-    _timer?.cancel();
-    return super.close();
   }
 
   Future<void> _onLoadPrayerTimes(
@@ -67,6 +48,7 @@ class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
         status: PrayerTimesStatus.loaded,
         prayerTimes: prayerTimes,
         locationName: locationName,
+        coordinates: coordinates, // Cache coordinates
       ));
     } catch (e) {
       debugPrint('Error loading prayer times: $e');
@@ -82,8 +64,25 @@ class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
     Emitter<PrayerTimesState> emit,
   ) async {
     try {
-      final position = await LocationConfiguration.getCurrentLocation();
-      final coordinates = Coordinates(position.latitude, position.longitude);
+      Coordinates coordinates;
+
+      // Use cached coordinates unless force refresh is requested
+      if (!event.forceLocationRefresh && state.coordinates != null) {
+        coordinates = state.coordinates!;
+      } else {
+        final position = await LocationConfiguration.getCurrentLocation();
+        coordinates = Coordinates(position.latitude, position.longitude);
+
+        // Update location name only if we fetched new coordinates
+        final locationName = await _getLocationName(
+          position.latitude,
+          position.longitude,
+        );
+        emit(state.copyWith(
+          locationName: locationName,
+          coordinates: coordinates,
+        ));
+      }
 
       final params = event.method.getParameters();
       params.madhab = event.madhab;
@@ -103,20 +102,20 @@ class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
     }
   }
 
-  void _onUpdateTick(
-    UpdateTick event,
-    Emitter<PrayerTimesState> emit,
-  ) {
-    emit(state.copyWith(currentTime: DateTime.now()));
-  }
-
   Future<void> _onScheduleSleepNotification(
     ScheduleSleepNotification event,
     Emitter<PrayerTimesState> emit,
   ) async {
     try {
-      final position = await LocationConfiguration.getCurrentLocation();
-      final coordinates = Coordinates(position.latitude, position.longitude);
+      // Use cached coordinates if available
+      Coordinates coordinates;
+      if (state.coordinates != null) {
+        coordinates = state.coordinates!;
+      } else {
+        final position = await LocationConfiguration.getCurrentLocation();
+        coordinates = Coordinates(position.latitude, position.longitude);
+      }
+
       final params = event.method.getParameters();
       params.madhab = event.madhab;
 
@@ -130,7 +129,7 @@ class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
       final alarmTime = nextFajr.subtract(event.sleepDuration);
       debugPrint('Alarm time: $alarmTime');
 
-      await LocalNotifications.scheduledSleeepNotification(
+      await LocalNotifications.scheduledSleepNotification(
         id: 'Sleep',
         setTime: alarmTime,
       );

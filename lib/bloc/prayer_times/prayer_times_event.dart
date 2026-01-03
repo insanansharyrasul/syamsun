@@ -23,17 +23,17 @@ class LoadPrayerTimes extends PrayerTimesEvent {
 class RefreshPrayerTimes extends PrayerTimesEvent {
   final CalculationMethod method;
   final Madhab madhab;
+  final bool forceLocationRefresh;
 
   const RefreshPrayerTimes({
     required this.method,
     required this.madhab,
+    this.forceLocationRefresh = false,
   });
 
   @override
-  List<Object?> get props => [method, madhab];
+  List<Object?> get props => [method, madhab, forceLocationRefresh];
 }
-
-class UpdateTick extends PrayerTimesEvent {}
 
 class ScheduleSleepNotification extends PrayerTimesEvent {
   final Duration sleepDuration;

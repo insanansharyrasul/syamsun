@@ -7,18 +7,18 @@ class PrayerTimesState extends Equatable {
   final PrayerTimes? prayerTimes;
   final String locationName;
   final String? errorMessage;
-  final DateTime currentTime;
+  final Coordinates? coordinates; // Cached coordinates
 
   const PrayerTimesState({
     this.status = PrayerTimesStatus.initial,
     this.prayerTimes,
     this.locationName = '',
     this.errorMessage,
-    required this.currentTime,
+    this.coordinates,
   });
 
   factory PrayerTimesState.initial() {
-    return PrayerTimesState(currentTime: DateTime.now());
+    return const PrayerTimesState();
   }
 
   DateTime get nextPrayerTime {
@@ -43,27 +43,19 @@ class PrayerTimesState extends Equatable {
     return 'Fajr';
   }
 
-  String get remainingTime {
-    final difference = nextPrayerTime.difference(currentTime);
-    final hours = difference.inHours;
-    final minutes = difference.inMinutes % 60;
-    final seconds = difference.inSeconds % 60;
-    return '$hours:$minutes:$seconds';
-  }
-
   PrayerTimesState copyWith({
     PrayerTimesStatus? status,
     PrayerTimes? prayerTimes,
     String? locationName,
     String? errorMessage,
-    DateTime? currentTime,
+    Coordinates? coordinates,
   }) {
     return PrayerTimesState(
       status: status ?? this.status,
       prayerTimes: prayerTimes ?? this.prayerTimes,
       locationName: locationName ?? this.locationName,
       errorMessage: errorMessage ?? this.errorMessage,
-      currentTime: currentTime ?? this.currentTime,
+      coordinates: coordinates ?? this.coordinates,
     );
   }
 
@@ -73,6 +65,6 @@ class PrayerTimesState extends Equatable {
         prayerTimes,
         locationName,
         errorMessage,
-        currentTime,
+        coordinates,
       ];
 }

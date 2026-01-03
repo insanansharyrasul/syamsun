@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:syamsun/bloc/bloc_exports.dart';
 import 'package:syamsun/constants/theme_set.dart';
+import 'package:syamsun/widgets/countdown_timer.dart';
 
 class PrayerTimesDisplay extends StatelessWidget {
   const PrayerTimesDisplay({super.key});
@@ -50,8 +51,9 @@ class PrayerTimesDisplay extends StatelessWidget {
                   'Remaining',
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
                 ),
-                Text(
-                  state.remainingTime,
+                // Use dedicated CountdownTimer widget - only this rebuilds every second
+                CountdownTimer(
+                  targetTime: nextPrayerTime,
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
                 ),
               ],

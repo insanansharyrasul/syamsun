@@ -1,7 +1,6 @@
 import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:syamsun/bloc/bloc_exports.dart';
@@ -18,6 +17,15 @@ Future<void> main() async {
   await LocalNotifications.init();
   await SavingPreferences.init();
   Workmanager().initialize(callbackDispatcher);
+
+  // Register periodic task to update prayer times and home widget
+  Workmanager().registerPeriodicTask(
+    "1",
+    "updatePrayerTimes",
+    frequency: const Duration(hours: 12),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+  );
+
   runApp(const MyApp());
 }
 
@@ -33,9 +41,9 @@ void callbackDispatcher() {
 
 Future<PrayerTimes> fetchPrayerTimes() async {
   try {
-    final Position position = await LocationConfiguration.getCurrentLocation();
+    final position = await LocationConfiguration.getCurrentLocation();
     final coordinates = Coordinates(position.latitude, position.longitude);
-    final String? savedMethod = await SavingPreferences.getConfigurationMadhab();
+    final String? savedMethod = await SavingPreferences.getConfigurationMethod();
     final CalculationMethod calculationMethod = savedMethod != null
         ? CalculationMethod.values.firstWhere(
             (method) => method.toString() == savedMethod,
