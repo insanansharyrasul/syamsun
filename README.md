@@ -65,13 +65,10 @@ I only do these thing if user really request me to do this. For now i'll just pu
 
 ## My Environment Detail
 
-- Flutter SDK (3.27.1)
-- Gradle: 8.3
-- Kotlin : 1.9.0
-- Groovy : 3.0.17
-- Ant : Apache Ant(TM) version 1.10.13 compiled on January 4 2023
-- JVM : 23.0.2 (Ubuntu 23.0.2+7-Ubuntu-1ubuntu122.04)
-- OS : Linux 6.8.0-52-generic amd64
+- Flutter SDK (3.35.1)
+- Gradle: 8.9
+- Kotlin : 2.1.0
+- OS : Linux 6.8.0-60-generic amd64
 
 
 ## Setup

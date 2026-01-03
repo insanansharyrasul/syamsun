@@ -150,8 +150,7 @@ class _MyAppState extends State<MyApp> {
       ),
       theme: ThemeData(
         scaffoldBackgroundColor: MainThemeSet.primaryColor,
-        dialogBackgroundColor: MainThemeSet.primaryColor,
-        dialogTheme: DialogTheme(backgroundColor: MainThemeSet.primaryColor),
+        dialogTheme: DialogThemeData(backgroundColor: MainThemeSet.primaryColor),
         appBarTheme: AppBarTheme(
           backgroundColor: MainThemeSet.primaryColor,
         ),
