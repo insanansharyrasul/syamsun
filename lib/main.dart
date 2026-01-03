@@ -1,4 +1,5 @@
 import 'package:adhan/adhan.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,24 +19,35 @@ Future<void> main() async {
   await SavingPreferences.init();
   Workmanager().initialize(callbackDispatcher);
 
-  // Register periodic task to update prayer times and home widget
-  Workmanager().registerPeriodicTask(
-    "1",
-    "updatePrayerTimes",
-    frequency: const Duration(hours: 12),
-    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
-  );
+  if (kDebugMode) {
+    Workmanager().registerOneOffTask(
+      "test-1",
+      "updatePrayerTimes",
+      initialDelay: Duration.zero,
+    );
+  } else {
+    Workmanager().registerPeriodicTask(
+      "1",
+      "updatePrayerTimes",
+      frequency: const Duration(hours: 3),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+    );
+  }
 
   runApp(const MyApp());
 }
 
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    debugPrint("Background task triggered at: ${DateTime.now()}");
-    final prayerTimes = await fetchPrayerTimes();
-    HomeWidgetConfiguration.updateWidget(prayerTimes);
-    debugPrint("Home widget updated.");
-    return Future.value(true);
+    try {
+      await SavingPreferences.init();
+      final prayerTimes = await fetchPrayerTimes();
+      HomeWidgetConfiguration.updateWidget(prayerTimes);
+      return Future.value(true);
+    } catch (e) {
+      return Future.value(false);
+    }
   });
 }
 
