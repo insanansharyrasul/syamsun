@@ -41,7 +41,6 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.resumed) {
-      // Check if the day has changed since we last loaded prayer times
       final now = DateTime.now();
       if (_lastLoadedDate == null ||
           _lastLoadedDate!.day != now.day ||
@@ -53,6 +52,14 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
         debugPrint('App resumed - same day, no refresh needed');
       }
     }
+  }
+
+  String _formatAlarmTime(DateTime alarmTime) {
+    final hour = alarmTime.hour.toString().padLeft(2, '0');
+    final minute = alarmTime.minute.toString().padLeft(2, '0');
+    final day = alarmTime.day;
+    final month = alarmTime.month;
+    return '$hour:$minute ($day/$month)';
   }
 
   void _loadPrayerTimes({bool forceLocationRefresh = false}) {
@@ -196,26 +203,37 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                             ));
 
                         Navigator.pop(dialogContext);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Sleep notifier set successfully',
-                              style: DialogThemeSet.dropDownFont,
+
+                        await Future.delayed(const Duration(milliseconds: 100));
+                        if (context.mounted) {
+                          final alarmTime =
+                              context.read<PrayerTimesBloc>().state.scheduledAlarmTime;
+                          final message = alarmTime != null
+                              ? 'Sleep notifier set for: ${_formatAlarmTime(alarmTime)}'
+                              : 'Sleep notifier set: ${_duration.hour.toString().padLeft(2, '0')}:${_duration.minute.toString().padLeft(2, '0')} before Fajr';
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                message,
+                                style: DialogThemeSet.dropDownFont,
+                              ),
+                              backgroundColor: MainThemeSet.focusColor,
                             ),
-                            backgroundColor: MainThemeSet.focusColor,
-                          ),
-                        );
+                          );
+                        }
                       } catch (e) {
                         debugPrint('Error setting alarm: $e');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Error setting alarm',
-                              style: DialogThemeSet.dropDownFont,
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error setting alarm',
+                                style: DialogThemeSet.dropDownFont,
+                              ),
+                              backgroundColor: Colors.red,
                             ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                          );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -252,6 +270,14 @@ class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
                   prayerTimesState.locationName,
                   style: GoogleFonts.montserrat(color: Colors.white, fontSize: 12),
                 ),
+                if (prayerTimesState.scheduledAlarmTime != null)
+                  Text(
+                    'Sleep alarm: ${_formatAlarmTime(prayerTimesState.scheduledAlarmTime!)}',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontSize: 11,
+                    ),
+                  ),
               ],
             ),
             actions: [

@@ -133,6 +133,8 @@ class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
         id: 'Sleep',
         setTime: alarmTime,
       );
+
+      emit(state.copyWith(scheduledAlarmTime: alarmTime));
     } catch (e) {
       debugPrint('Error scheduling sleep notification: $e');
       rethrow;

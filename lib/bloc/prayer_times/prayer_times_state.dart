@@ -8,6 +8,7 @@ class PrayerTimesState extends Equatable {
   final String locationName;
   final String? errorMessage;
   final Coordinates? coordinates; // Cached coordinates
+  final DateTime? scheduledAlarmTime; // Scheduled sleep alarm time
 
   const PrayerTimesState({
     this.status = PrayerTimesStatus.initial,
@@ -15,6 +16,7 @@ class PrayerTimesState extends Equatable {
     this.locationName = '',
     this.errorMessage,
     this.coordinates,
+    this.scheduledAlarmTime,
   });
 
   factory PrayerTimesState.initial() {
@@ -49,6 +51,7 @@ class PrayerTimesState extends Equatable {
     String? locationName,
     String? errorMessage,
     Coordinates? coordinates,
+    DateTime? scheduledAlarmTime,
   }) {
     return PrayerTimesState(
       status: status ?? this.status,
@@ -56,6 +59,7 @@ class PrayerTimesState extends Equatable {
       locationName: locationName ?? this.locationName,
       errorMessage: errorMessage ?? this.errorMessage,
       coordinates: coordinates ?? this.coordinates,
+      scheduledAlarmTime: scheduledAlarmTime ?? this.scheduledAlarmTime,
     );
   }
 
@@ -66,5 +70,6 @@ class PrayerTimesState extends Equatable {
         locationName,
         errorMessage,
         coordinates,
+        scheduledAlarmTime,
       ];
 }

@@ -51,7 +51,6 @@ class PrayerTimesDisplay extends StatelessWidget {
                   'Remaining',
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
                 ),
-                // Use dedicated CountdownTimer widget - only this rebuilds every second
                 CountdownTimer(
                   targetTime: nextPrayerTime,
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
