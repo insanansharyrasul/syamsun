@@ -146,7 +146,7 @@ class PrayerTimesBloc extends Bloc<PrayerTimesEvent, PrayerTimesState> {
       final timezone = DateTime.now().timeZoneName;
       List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
       Placemark place = placemarks[0];
-      return '${place.country}, ${place.locality} ($timezone)';
+      return '${place.administrativeArea}, ${place.subAdministrativeArea}, ${place.locality} ($timezone)';
     } catch (e) {
       return 'Location not found';
     }
