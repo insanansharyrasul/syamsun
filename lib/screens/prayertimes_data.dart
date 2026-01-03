@@ -1,123 +1,45 @@
-import 'dart:async';
-
-import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:syamsun/bloc/bloc_exports.dart';
 import 'package:syamsun/constants/theme_set.dart';
-import 'package:syamsun/utils/homewidget_configuration.dart';
-import 'package:syamsun/utils/schedule_configuration.dart';
 
-class PrayerTimesRestart extends StatefulWidget {
-  final Future<Position> location;
-  final Madhab madhab;
-  final CalculationMethod method;
-  final Function(String) locationName;
-  const PrayerTimesRestart({
-    super.key,
-    required this.location,
-    required this.madhab,
-    required this.method,
-    required this.locationName,
-  });
-
-  @override
-  State<PrayerTimesRestart> createState() => _PrayerTimesRestartState();
-}
-
-class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
-  final String _timezone = DateTime.now().timeZoneName;
-  late Future<Position> _locationFuture;
-  Timer? _timer;
-  Coordinates _myCoordinates = Coordinates(0, 0);
-
-  @override
-  void initState() {
-    super.initState();
-    _locationFuture = widget.location;
-    widget.location.then((position) {
-      _getAddressFromCoordinates(position.latitude, position.longitude);
-      _myCoordinates = Coordinates(position.latitude, position.longitude);
-      final paramsCalc = widget.method.getParameters();
-      paramsCalc.madhab = widget.madhab;
-      final prayerTimes = PrayerTimes.today(_myCoordinates, paramsCalc);
-      ScheduleConfiguration.schedulePrayerNotification(prayerTimes);
-    });
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  Future<void> _getAddressFromCoordinates(
-      double latitude, double longitude) async {
-    try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(latitude, longitude);
-      Placemark place = placemarks[0];
-      widget.locationName('${place.country}, ${place.locality} ($_timezone)');
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          widget.locationName('Location not found');
-        });
-      }
-    }
-  }
-
-  String _formatTimeDifference(DateTime nextPrayerTime) {
-    final now = DateTime.now();
-    final difference = nextPrayerTime.difference(now);
-    final hours = difference.inHours;
-    final minutes = difference.inMinutes % 60;
-    final seconds = difference.inSeconds % 60;
-    return '$hours:$minutes:$seconds';
-  }
+class PrayerTimesDisplay extends StatelessWidget {
+  const PrayerTimesDisplay({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _locationFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return BlocBuilder<PrayerTimesBloc, PrayerTimesState>(
+      builder: (context, state) {
+        if (state.status == PrayerTimesStatus.loading ||
+            state.status == PrayerTimesStatus.initial) {
           return const Center(
-              child: CircularProgressIndicator(
-            color: Colors.white,
-          ));
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          );
         }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+
+        if (state.status == PrayerTimesStatus.error) {
+          return Center(
+            child: Text(
+              'Error: ${state.errorMessage}',
+              style: GoogleFonts.lato(color: Colors.white),
+            ),
+          );
         }
-        final Coordinates myCoordinates = Coordinates(
-          snapshot.data!.latitude,
-          snapshot.data!.longitude,
-        );
-        final paramsCalc = widget.method.getParameters();
-        paramsCalc.madhab = widget.madhab;
-        final prayerTimes = PrayerTimes.today(myCoordinates, paramsCalc);
-        final nextPrayerTime =
-            ScheduleConfiguration.getNextPrayerTime(prayerTimes);
-        HomeWidgetConfiguration.updateWidget(prayerTimes);
+
+        final prayerTimes = state.prayerTimes!;
+        final nextPrayerTime = state.nextPrayerTime;
+
         return Column(
           children: [
             const SizedBox(height: 16),
             Column(
               children: [
                 Text(
-                  ScheduleConfiguration.setNextName(prayerTimes),
+                  state.nextPrayerName,
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 24),
                 ),
                 Text(
@@ -129,8 +51,7 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
                 ),
                 Text(
-                  _formatTimeDifference(
-                      ScheduleConfiguration.getNextPrayerTime(prayerTimes)),
+                  state.remainingTime,
                   style: GoogleFonts.lato(color: Colors.white, fontSize: 16),
                 ),
               ],
@@ -144,116 +65,70 @@ class _PrayerTimesRestartState extends State<PrayerTimesRestart> {
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: nextPrayerTime == prayerTimes.fajr ||
-                        nextPrayerTime ==
-                            prayerTimes.fajr.add(const Duration(days: 1))
-                    ? MainThemeSet.focusColor
-                    : MainThemeSet.primaryColor,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Fajr',
-                    style: MainThemeSet.mainFont,
-                  ),
-                  Text(
-                    DateFormat.Hm().format(prayerTimes.fajr),
-                    style: MainThemeSet.mainFont,
-                  ),
-                ],
-              ),
+            _PrayerTimeRow(
+              prayerName: 'Fajr',
+              prayerTime: prayerTimes.fajr,
+              isNext: nextPrayerTime == prayerTimes.fajr ||
+                  nextPrayerTime == prayerTimes.fajr.add(const Duration(days: 1)),
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: nextPrayerTime == prayerTimes.dhuhr
-                    ? MainThemeSet.focusColor
-                    : MainThemeSet.primaryColor,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Dhuhr',
-                    style: MainThemeSet.mainFont,
-                  ),
-                  Text(
-                    DateFormat.Hm().format(prayerTimes.dhuhr),
-                    style: MainThemeSet.mainFont,
-                  ),
-                ],
-              ),
+            _PrayerTimeRow(
+              prayerName: 'Dhuhr',
+              prayerTime: prayerTimes.dhuhr,
+              isNext: nextPrayerTime == prayerTimes.dhuhr,
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: nextPrayerTime == prayerTimes.asr
-                    ? MainThemeSet.focusColor
-                    : MainThemeSet.primaryColor,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Asr',
-                    style: MainThemeSet.mainFont,
-                  ),
-                  Text(
-                    DateFormat.Hm().format(prayerTimes.asr),
-                    style: MainThemeSet.mainFont,
-                  ),
-                ],
-              ),
+            _PrayerTimeRow(
+              prayerName: 'Asr',
+              prayerTime: prayerTimes.asr,
+              isNext: nextPrayerTime == prayerTimes.asr,
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: nextPrayerTime == prayerTimes.maghrib
-                    ? MainThemeSet.focusColor
-                    : MainThemeSet.primaryColor,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Maghrib',
-                    style: MainThemeSet.mainFont,
-                  ),
-                  Text(
-                    DateFormat.Hm().format(prayerTimes.maghrib),
-                    style: MainThemeSet.mainFont,
-                  ),
-                ],
-              ),
+            _PrayerTimeRow(
+              prayerName: 'Maghrib',
+              prayerTime: prayerTimes.maghrib,
+              isNext: nextPrayerTime == prayerTimes.maghrib,
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: nextPrayerTime == prayerTimes.isha
-                    ? MainThemeSet.focusColor
-                    : MainThemeSet.primaryColor,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Isha',
-                    style: MainThemeSet.mainFont,
-                  ),
-                  Text(
-                    DateFormat.Hm().format(prayerTimes.isha),
-                    style: MainThemeSet.mainFont,
-                  ),
-                ],
-              ),
+            _PrayerTimeRow(
+              prayerName: 'Isha',
+              prayerTime: prayerTimes.isha,
+              isNext: nextPrayerTime == prayerTimes.isha,
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class _PrayerTimeRow extends StatelessWidget {
+  final String prayerName;
+  final DateTime prayerTime;
+  final bool isNext;
+
+  const _PrayerTimeRow({
+    required this.prayerName,
+    required this.prayerTime,
+    required this.isNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isNext ? MainThemeSet.focusColor : MainThemeSet.primaryColor,
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            prayerName,
+            style: MainThemeSet.mainFont,
+          ),
+          Text(
+            DateFormat.Hm().format(prayerTime),
+            style: MainThemeSet.mainFont,
+          ),
+        ],
+      ),
     );
   }
 }

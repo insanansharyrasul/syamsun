@@ -8,8 +8,11 @@ environment:
 
 dependencies:
   adhan: ^2.0.0+1
+  bloc: ^8.1.4
+  equatable: ^2.0.5
   flutter:
     sdk: flutter
+  flutter_bloc: ^8.1.6
   flutter_local_notifications: ^18.0.1
   flutter_time_picker_spinner: ^2.0.0
   geocoding: ^3.0.0
