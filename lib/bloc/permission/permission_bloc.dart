@@ -33,10 +33,27 @@ class PermissionBloc extends Bloc<PermissionEvent, PermissionState> {
   ) async {
     emit(state.copyWith(status: AppPermissionStatus.loading));
 
-    final locationResult = await ph.Permission.locationWhenInUse.request();
+    final locationStatus = await ph.Permission.locationWhenInUse.status;
+    ph.PermissionStatus locationResult = locationStatus;
+
+    if (!locationStatus.isGranted) {
+      locationResult = await ph.Permission.locationWhenInUse.request();
+    }
+
+    if (!locationResult.isGranted) {
+      emit(state.copyWith(status: AppPermissionStatus.denied));
+      return;
+    }
+
+    final alarmStatus = await ph.Permission.scheduleExactAlarm.status;
+
+    if (alarmStatus.isGranted) {
+      emit(state.copyWith(status: AppPermissionStatus.granted));
+      return;
+    }
     final alarmResult = await ph.Permission.scheduleExactAlarm.request();
 
-    if (locationResult.isGranted && alarmResult.isGranted) {
+    if (alarmResult.isGranted) {
       emit(state.copyWith(status: AppPermissionStatus.granted));
     } else {
       emit(state.copyWith(status: AppPermissionStatus.denied));
