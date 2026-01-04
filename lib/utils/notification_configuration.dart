@@ -24,7 +24,6 @@ class LocalNotifications {
 
   static Future<void> scheduledNotification(
       {required String prayerName, required DateTime prayerTime}) async {
-    // Vibration pattern: wait 0ms, vibrate 1000ms, wait 500ms, vibrate 2000ms
     final vibrationPattern = Int64List.fromList([0, 1000, 500, 2000]);
     tz.initializeTimeZones();
     final AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
@@ -54,9 +53,8 @@ class LocalNotifications {
     );
   }
 
-  static Future<void> scheduledSleeepNotification(
+  static Future<void> scheduledSleepNotification(
       {required String id, required DateTime setTime}) async {
-    // Vibration pattern: wait 0ms, vibrate 1000ms, wait 500ms, vibrate 2000ms
     final vibrationPattern = Int64List.fromList([0, 500, 500, 1000]);
     tz.initializeTimeZones();
     final AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
